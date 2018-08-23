@@ -11,15 +11,15 @@ mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost/vidjot-dev', {
 	useMongoClient: true
 })
-.then(() => console.log('MongoDB Connected!'))
-.catch(err => console.log('Error connecting to MongoDB'));
+	.then(() => console.log('MongoDB Connected!'))
+	.catch(err => console.log('Error connecting to MongoDB'));
 
 // Load IdeaModel
 require('./models/idea');
 const Idea = mongoose.model('ideas');
 
 // body-parser middleware
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 
@@ -49,6 +49,29 @@ app.get('/about', (req, res) => {
 	res.render('about');
 });
 
+// Add all ideas
+app.get('/ideas', (req, res) => {
+	Idea.find({})
+		.sort({ date: 'desc' })
+		.then(ideas => {
+			res.render('ideas/all', {
+				ideas: ideas,
+			});
+		});
+});
+
+// Edit Idea form
+app.get('/ideas/edit/:id', (req, res) => {
+	Idea.findOne({
+		_id: req.params.id
+	})
+		.then(idea => {
+			res.render('ideas/edit', {
+				idea: idea
+			})
+		} );
+});
+
 // Add Idea Form
 app.get('/ideas/add', (req, res) => {
 	res.render('ideas/add');
@@ -58,10 +81,10 @@ app.get('/ideas/add', (req, res) => {
 app.post('/ideas', (req, res) => {
 	let errors = [];
 	if (!req.body.title) {
-		errors.push({text: "Please add a title"});
+		errors.push({ text: "Please add a title" });
 	}
 	if (!req.body.details) {
-		errors.push({text: "Please enter the details"});
+		errors.push({ text: "Please enter the details" });
 	}
 	if (errors.length > 0) {
 		res.render('ideas/add', {
@@ -70,12 +93,18 @@ app.post('/ideas', (req, res) => {
 			details: req.body.details
 		});
 	} else {
-		res.send("Passed");
+		const newUser = {
+			title: req.body.title,
+			details: req.body.details,
+		};
+		new Idea(newUser).save().then(idea => {
+			res.redirect('/ideas');
+		});
 	}
 });
 
 const port = 5000;
 
 app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
+	console.log(`Server started on port ${port}`);
 });
