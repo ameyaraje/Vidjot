@@ -1,6 +1,7 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
 const app = express();
 
@@ -14,9 +15,14 @@ mongoose.connect('mongodb://localhost/vidjot-dev', {
 .catch(err => console.log('Error connecting to MongoDB'));
 
 // Load IdeaModel
-
 require('./models/idea');
 const Idea = mongoose.model('ideas');
+
+// body-parser middleware
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+
+
 // Middleware that can be used
 
 // app.use(function(req, res, next){
@@ -46,6 +52,26 @@ app.get('/about', (req, res) => {
 // Add Idea Form
 app.get('/ideas/add', (req, res) => {
 	res.render('ideas/add');
+});
+
+// Process form
+app.post('/ideas', (req, res) => {
+	let errors = [];
+	if (!req.body.title) {
+		errors.push({text: "Please add a title"});
+	}
+	if (!req.body.details) {
+		errors.push({text: "Please enter the details"});
+	}
+	if (errors.length > 0) {
+		res.render('ideas/add', {
+			errors: errors,
+			title: req.body.title,
+			details: req.body.details
+		});
+	} else {
+		res.send("Passed");
+	}
 });
 
 const port = 5000;
