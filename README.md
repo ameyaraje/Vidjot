@@ -1,4 +1,4 @@
-# VIDJOT
+# Vidjot
 
 This is an application where people can submit video ideas
 
