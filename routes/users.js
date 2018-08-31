@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const router = express.Router();
-// const passport = require('passport');
+const passport = require('passport');
 
 module.exports = router;
 
@@ -18,6 +18,15 @@ router.get('/login', (req, res) => {
 // User Register
 router.get('/register', (req, res) => {
     res.render('users/register');
+});
+
+// Login form POST
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local', {
+        successRedirect: '/ideas',
+        failureRedirect: '/users/login',
+        failureFlash: true
+    })(req, res, next);
 });
 
 // Post the registered form
@@ -52,7 +61,7 @@ router.post('/register', (req, res) => {
                             newUser.password = hash;
                             newUser.save()
                                 .then(user => {
-                                    req.flash('succes_msg', 'You are now registered and can log in');
+                                    req.flash('success_msg', 'Thanks for registering with Vidjot!');
                                     res.redirect('/users/login');
                                 })
                                 .catch(err => {
