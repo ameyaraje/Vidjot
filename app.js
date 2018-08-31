@@ -20,6 +20,7 @@ require('./config/passport')(passport);
 
 // Map global promise
 mongoose.Promise = global.Promise;
+
 // Connect to Mongoose
 mongoose.connect('mongodb://localhost/vidjot-dev', {
 	useMongoClient: true
@@ -36,12 +37,16 @@ app.use(methodOverride('_method'));
 // Static Folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Express session middleware
+// Express Session middleware
 app.use(session({
 	secret: 'secret',
 	resave: true,
 	saveUninitialized: true,
 }));
+
+// Passport Session middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(flash());
 
@@ -56,6 +61,7 @@ app.use(function(req, res, next) {
 	res.locals.success_msg = req.flash('success_msg');
 	res.locals.error_msg = req.flash('error_msg');
 	res.locals.error = req.flash('error');
+	res.locals.user = req.user || null;
 	next();
 });
 
